@@ -32,12 +32,36 @@ exports.login =async (req, res, next) => {
             email: findUser.email
         }
 
-        const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRE})
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '7d'})
 
         const result = {user: payload, token: token}
 
         res.status(200).json({result})
 
+    } catch (error) {
+        next(error)
+    }
+}
+
+exports.getUser = async (req, res, next) => {
+    try {
+        const user = req.user
+        const result = await prisma.user.findUnique({
+            where: {
+                email: user.email
+            },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                phone: true,
+                role: true,
+                birthDate: true,
+                profileImage: true
+            }
+
+        })
+        res.json({result})
     } catch (error) {
         next(error)
     }
